@@ -1,0 +1,91 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+
+jobs:
+  deploy:
+    name: Build & deploy to Lightsail
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            us-east-1
+
+      - name: Build Docker image
+        run: docker build -t portfolio-backend ./backend
+
+      # Push the image to Lightsail's built-in container registry.
+      # The command prints the image reference on the last line, e.g.:
+      #   Refer to this image as ":portfolio-backend.latest.5" in deployments.
+      - name: Push image to Lightsail registry
+        id: push
+        run: |
+          OUTPUT=$(aws lightsail push-container-image \
+            --service-name ${{ secrets.LIGHTSAIL_SERVICE_NAME }} \
+            --label latest \
+            --image portfolio-backend:latest \
+            2>&1)
+          echo "$OUTPUT"
+          IMAGE=$(echo "$OUTPUT" | grep -oP '(?<=")[^"]+(?=" in deployments)')
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Lightsail Container Service
+        run: |
+          aws lightsail create-container-service-deployment \
+            --service-name ${{ secrets.LIGHTSAIL_SERVICE_NAME }} \
+            --containers "{
+              \"backend\": {
+                \"image\": \"${{ steps.push.outputs.image }}\",
+                \"ports\": {\"8000\": \"HTTP\"},
+                \"environment\": {
+                  \"DATABASE_URL\":      \"${{ secrets.DATABASE_URL }}\",
+                  \"FRED_API_KEY\":      \"${{ secrets.FRED_API_KEY }}\",
+                  \"ENVIRONMENT\":       \"production\",
+                  \"CORS_ORIGINS\":      \"${{ secrets.CORS_ORIGINS }}\",
+                  \"S3_BUCKET_MODELS\":  \"${{ secrets.S3_BUCKET_MODELS }}\",
+                  \"AWS_REGION\":        \"us-east-1\",
+                  \"MODEL_DIR\":         \"./models\",
+                  \"LOG_LEVEL\":         \"INFO\"
+                }
+              }
+            }" \
+            --public-endpoint "{
+              \"containerName\": \"backend\",
+              \"containerPort\": 8000,
+              \"healthCheck\": {
+                \"path\": \"/api/health\",
+                \"intervalSeconds\": 10,
+                \"timeoutSeconds\": 5,
+                \"successCodes\": \"200\"
+              }
+            }"
+
+      - name: Wait for deployment to become active
+        run: |
+          echo "Waiting for deployment to stabilize..."
+          for i in {1..20}; do
+            STATE=$(aws lightsail get-container-services \
+              --service-name ${{ secrets.LIGHTSAIL_SERVICE_NAME }} \
+              --query 'containerServices[0].state' \
+              --output text)
+            echo "  state: $STATE"
+            if [ "$STATE" = "RUNNING" ]; then
+              echo "Deployment active."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "Deployment did not reach RUNNING within 5 minutes." >&2
+          exit 1

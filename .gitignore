@@ -1,0 +1,28 @@
+# Environment
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+
+# Model artifacts
+backend/models/*.pkl
+backend/models/*.joblib
+backend/models/*.json
+
+# Node
+node_modules/
+.next/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+.claude/
