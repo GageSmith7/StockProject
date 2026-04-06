@@ -7,8 +7,7 @@ A full-stack quantitative finance platform built to demonstrate production-grade
 ---
 
 ## Table of Contents
-
-- [What This Project Demonstrates](#what-this-project-demonstrates)
+---
 - [System Architecture](#system-architecture)
 - [Data Engineering Pipeline](#data-engineering-pipeline)
 - [Statistical & Actuarial Methods](#statistical--actuarial-methods)
@@ -19,28 +18,6 @@ A full-stack quantitative finance platform built to demonstrate production-grade
 - [Tech Stack](#tech-stack)
 - [Local Setup](#local-setup)
 - [Testing](#testing)
-
----
-
-## What This Project Demonstrates
-
-### For Data Analytics Roles
-- End-to-end ETL pipeline with automated scheduling, idempotent upserts, and tiered data sourcing
-- Cross-sectional feature engineering (18 signals) across 500+ securities with sector-relative normalization
-- Typed REST API layer (FastAPI + Pydantic) integrated with a typed frontend (TypeScript + Next.js)
-- Audit-trail database design with quality flags on every observation
-
-### For Actuarial Roles
-- Block-bootstrap Monte Carlo simulation preserving volatility clustering — more realistic than IID approaches
-- Regime-aware scenario generation (expansion vs. contraction environments)
-- Percentile fan chart (p10 / p50 / p90) analogous to reserve range and loss distribution outputs
-- Information Coefficient (IC) tracking as a model validation metric — analogous to Gini/lift in predictive models
-
-### For Underwriting & Risk Roles
-- Comprehensive risk metric suite: CAGR, Sharpe ratio, Calmar ratio, max drawdown, alpha, beta, information ratio
-- Walk-forward backtesting that mirrors out-of-sample held-period testing used in pricing model validation
-- Gated model deployment — model is rejected if IC falls below threshold (same principle as model risk management gates)
-- Macro regime indicators (yield curve, CPI, Fed Funds rate) integrated as risk signals
 
 ---
 
