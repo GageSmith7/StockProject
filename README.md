@@ -24,14 +24,14 @@ A full-stack quantitative finance platform built to demonstrate production-grade
 ## System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        External Data Sources                        │
+┌────────────────────────────────────────────────────────────────────┐
+│                        External Data Sources                       │
 │   yFinance (OHLCV)    FRED API (DFF, CPI, T10Y2Y)    Wikipedia     │
 └────────────┬─────────────────────────┬──────────────────┬──────────┘
              │                         │                  │
              ▼                         ▼                  ▼
 ┌────────────────────────────────────────────────────────────────────┐
-│                    Data Ingestion Layer (Python)                    │
+│                    Data Ingestion Layer (Python)                   │
 │   fetcher.py — tenacity retry   •   scheduler.py — APScheduler     │
 │   cleaner.py — gap fill / outlier flag   •   store.py — upsert     │
 └─────────────────────────────────┬──────────────────────────────────┘
@@ -40,7 +40,7 @@ A full-stack quantitative finance platform built to demonstrate production-grade
 ┌────────────────────────────────────────────────────────────────────┐
 │                     PostgreSQL 15 (Docker / RDS)                   │
 │  prices  •  macro_data  •  symbols  •  prediction_log              │
-│  model_metrics  •  constituent_history                              │
+│  model_metrics  •  constituent_history                             │
 └──────┬──────────────┬───────────────────────┬──────────────────────┘
        │              │                       │
        ▼              ▼                       ▼
